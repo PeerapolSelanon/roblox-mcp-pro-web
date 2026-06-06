@@ -219,8 +219,8 @@
   /* reveal motion: content is VISIBLE by default; the reveal is additive.
      Elements only animate when JS adds .in, so a headless render or a failed
      observer never ships a blank section. */
-  @keyframes fadeUp{ from{ opacity: 0; transform: translateY(20px); } to{ opacity: 1; transform: none; } }
-  .js .reveal.in{ animation: fadeUp .7s var(--ease) both; }
+  .js .reveal{ transform: translateY(16px); transition: transform .65s var(--ease); }
+  .js .reveal.in{ transform: none; }
   .js .rise{ opacity: 0; transform: translateY(20px); animation: rise .9s var(--ease) forwards; }
   .js .rise.d1{ animation-delay: .06s; } .js .rise.d2{ animation-delay: .14s; }
   .js .rise.d3{ animation-delay: .22s; } .js .rise.d4{ animation-delay: .30s; }
@@ -229,7 +229,7 @@
   @media (prefers-reduced-motion: reduce){
     html{ scroll-behavior: auto; }
     *, *::before, *::after{ animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
-    .js .reveal.in{ animation: none; }
+    .js .reveal{ transform: none; transition: none; }
     .js .rise{ opacity: 1; transform: none; animation: none; }
     .mock .cursor{ animation: none; }
   }
