@@ -6,4 +6,4 @@ This repo contains the landing page only (no product source). The product itself
 
 - Live site: https://peerapolselanon.github.io/roblox-mcp-pro-web/
 - Buy: https://roblox-mcp-pro.lemonsqueezy.com
-- Contact: ett.thailand123@gmail.com
+- Contact: peerapolselanon@gmail.com
