@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Roblox MCP Pro — Drive Roblox Studio with your AI agent</title>
+<meta name="description" content="Let Claude, Codex, Cursor and other AI agents control a live Roblox Studio session — run Luau, build UI & terrain, and sync Studio with your files. 14-day free trial." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>" />
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#141823; --panel2:#1b2130; --line:#262d3d;
+    --text:#e7ecf5; --muted:#9aa6bd; --brand:#5b8cff; --brand2:#7c5cff;
+    --good:#37d39b; --radius:16px; --max:1080px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font:16px/1.6 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 22px}
+  .btn{display:inline-block;padding:13px 22px;border-radius:12px;font-weight:600;transition:.15s;border:1px solid transparent;cursor:pointer}
+  .btn-primary{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
+  .btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+  .btn-ghost{border-color:var(--line);color:var(--text)}
+  .btn-ghost:hover{background:var(--panel2)}
+  .muted{color:var(--muted)}
+  .pill{display:inline-block;padding:5px 12px;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--muted);background:var(--panel)}
+
+  /* nav */
+  header{position:sticky;top:0;z-index:10;backdrop-filter:blur(10px);background:rgba(11,13,18,.72);border-bottom:1px solid var(--line)}
+  nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px}
+  .logo span{font-size:22px}
+  nav .links{display:flex;gap:26px;align-items:center}
+  nav .links a{color:var(--muted);font-size:15px}
+  nav .links a:hover{color:var(--text)}
+  @media(max-width:760px){nav .links a:not(.btn){display:none}}
+
+  /* hero */
+  .hero{padding:90px 0 70px;text-align:center;position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:-40% 0 auto 0;height:520px;background:radial-gradient(60% 60% at 50% 0%,rgba(124,92,255,.20),transparent 70%);pointer-events:none}
+  .hero h1{font-size:clamp(34px,6vw,60px);line-height:1.08;letter-spacing:-.02em;font-weight:800;max-width:880px;margin:0 auto 18px}
+  .hero h1 .grad{background:linear-gradient(135deg,var(--brand),var(--brand2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p.lead{font-size:clamp(16px,2.4vw,20px);color:var(--muted);max-width:640px;margin:0 auto 30px}
+  .cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .hero .note{margin-top:16px;font-size:14px;color:var(--muted)}
+
+  /* sections */
+  section{padding:64px 0;border-top:1px solid var(--line)}
+  .eyebrow{color:var(--brand);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+  h2{font-size:clamp(26px,4vw,38px);letter-spacing:-.01em;margin-bottom:14px;font-weight:800}
+  .sub{color:var(--muted);max-width:620px;margin-bottom:38px}
+
+  .grid{display:grid;gap:18px}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:860px){.g3{grid-template-columns:1fr 1fr}}
+  @media(max-width:620px){.g3,.g2{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+  .card h3{font-size:18px;margin-bottom:8px}
+  .card p{color:var(--muted);font-size:15px}
+  .card .ico{font-size:26px;margin-bottom:12px;display:block}
+
+  .agents{display:flex;flex-wrap:wrap;gap:10px}
+  .agents .pill{font-size:14px;color:var(--text);background:var(--panel2)}
+
+  .steps{counter-reset:s}
+  .step{display:flex;gap:18px;padding:18px 0;border-bottom:1px solid var(--line)}
+  .step:last-child{border-bottom:0}
+  .step .num{counter-increment:s;flex:0 0 38px;height:38px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font-weight:700;color:var(--brand)}
+  .step .num::before{content:counter(s)}
+  .step h3{font-size:17px;margin-bottom:3px}
+  .step p{color:var(--muted);font-size:15px}
+
+  /* pricing */
+  .price-wrap{display:flex;justify-content:center}
+  .price{max-width:420px;width:100%;background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:20px;padding:34px;text-align:center;position:relative}
+  .price .amt{font-size:46px;font-weight:800;margin:6px 0}
+  .price .amt small{font-size:17px;color:var(--muted);font-weight:500}
+  .price ul{list-style:none;text-align:left;margin:24px 0;display:grid;gap:11px}
+  .price li{display:flex;gap:10px;color:var(--text);font-size:15px}
+  .price li::before{content:"✓";color:var(--good);font-weight:800}
+  .price .btn{width:100%;margin-top:6px}
+  .price .trial{margin-top:14px;font-size:13px;color:var(--muted)}
+
+  /* faq + policy */
+  details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+  details summary{cursor:pointer;font-weight:600;list-style:none}
+  details summary::after{content:"+";float:right;color:var(--muted)}
+  details[open] summary::after{content:"–"}
+  details p{color:var(--muted);margin-top:10px;font-size:15px}
+
+  .policy h3{margin:22px 0 6px;font-size:18px}
+  .policy p{color:var(--muted);margin-bottom:6px}
+
+  footer{border-top:1px solid var(--line);padding:34px 0;color:var(--muted);font-size:14px}
+  footer .row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px}
+  footer a{color:var(--muted)}footer a:hover{color:var(--text)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <nav>
+      <div class="logo"><span>🎮</span> Roblox MCP Pro</div>
+      <div class="links">
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a class="btn btn-primary" href="#pricing">Get started</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" style="border-top:0">
+    <div class="wrap">
+      <span class="pill">⚡ Works with Claude, Codex, Cursor, Antigravity & more</span>
+      <h1>Let your AI agent <span class="grad">build inside Roblox Studio</span></h1>
+      <p class="lead">Roblox MCP Pro connects your AI assistant to a live Roblox Studio session — it runs Luau, edits the world, builds UI &amp; terrain, and keeps Studio in sync with your files.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#pricing">Start 14-day free trial</a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+      <p class="note">No credit card for the trial · Cancel anytime</p>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="eyebrow">What it does</div>
+      <h2>One agent, full control of Studio</h2>
+      <p class="sub">28 purpose-built tools give your AI real hands inside Roblox Studio — not just code suggestions.</p>
+      <div class="grid g3">
+        <div class="card"><span class="ico">⚙️</span><h3>Run Luau live</h3><p>Execute code in Studio and read back output, return values, and errors.</p></div>
+        <div class="card"><span class="ico">🌳</span><h3>Query &amp; edit the world</h3><p>Search, create, move, clone and delete instances; read and write any property.</p></div>
+        <div class="card"><span class="ico">🎨</span><h3>Build UI from an image</h3><p>Turn a screenshot or mockup into a real ScreenGui, then preview and refine it.</p></div>
+        <div class="card"><span class="ico">⛰️</span><h3>Terrain, lighting &amp; FX</h3><p>Generate voxel terrain, set time-of-day, fog, bloom, atmosphere and more.</p></div>
+        <div class="card"><span class="ico">🔁</span><h3>Two-way file sync</h3><p>Mirror a Studio subtree to disk and back, with a live source map.</p></div>
+        <div class="card"><span class="ico">👥</span><h3>Multi-agent ready</h3><p>Claude Code, Codex and Antigravity can drive the same Studio session at once.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">Compatible</div>
+      <h2>Bring your own AI agent</h2>
+      <p class="sub">Register the server once and use it from any MCP-compatible client.</p>
+      <div class="agents">
+        <span class="pill">Claude Code</span>
+        <span class="pill">Claude Desktop</span>
+        <span class="pill">Codex</span>
+        <span class="pill">Cursor</span>
+        <span class="pill">Windsurf</span>
+        <span class="pill">Antigravity / Gemini</span>
+        <span class="pill">Cline (VS Code)</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="eyebrow">How it works</div>
+      <h2>Up and running in minutes</h2>
+      <div class="steps card" style="padding:8px 24px">
+        <div class="step"><div class="num"></div><div><h3>Register the MCP server</h3><p>One command (or one config line) in your AI client — installs via <code>npx</code>, nothing to build.</p></div></div>
+        <div class="step"><div class="num"></div><div><h3>Install the Studio plugin</h3><p>Drop the plugin into Roblox Studio and click Connect.</p></div></div>
+        <div class="step"><div class="num"></div><div><h3>Ask your agent to build</h3><p>“Build a shop UI”, “generate terrain”, “refactor this script” — it just works.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="wrap">
+      <div class="eyebrow">Pricing</div>
+      <h2>Simple subscription</h2>
+      <p class="sub">Start with a 14-day free trial. Subscribe when you’re ready — cancel anytime.</p>
+      <div class="price-wrap">
+        <div class="price">
+          <div class="pill">Pro</div>
+          <div class="amt">฿199 <small>/ month</small></div>
+          <p class="muted">Billed monthly · VAT handled at checkout</p>
+          <ul>
+            <li>All 28 Studio tools</li>
+            <li>Use from any MCP client</li>
+            <li>Two-way Studio ↔ file sync</li>
+            <li>Multi-agent concurrent access</li>
+            <li>Product updates included</li>
+            <li>Email support</li>
+          </ul>
+          <a class="btn btn-primary" href="https://roblox-mcp-pro.lemonsqueezy.com/checkout/buy/91ab6fc2-cbd5-42b8-8125-483bed295faa">Subscribe — ฿199/mo</a>
+          <p class="trial">Or try free for 14 days first — no card required.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="eyebrow">FAQ</div>
+      <h2>Questions</h2>
+      <details><summary>Do I need to know how to code?</summary><p>No. You drive it through your AI agent in plain language. Basic familiarity with Roblox Studio helps.</p></details>
+      <details><summary>How does the free trial work?</summary><p>Install and use everything free for 14 days — no credit card. After that, subscribe and paste your license key to keep going.</p></details>
+      <details><summary>Which AI assistants are supported?</summary><p>Any MCP-compatible client: Claude Code, Claude Desktop, Codex, Cursor, Windsurf, Antigravity/Gemini and Cline.</p></details>
+      <details><summary>Can I use it on more than one computer?</summary><p>Yes — your license activates on multiple machines (e.g. desktop + laptop).</p></details>
+      <details><summary>What happens if I cancel?</summary><p>You keep access until the end of your billing period; after that the license stops validating.</p></details>
+    </div>
+  </section>
+
+  <section id="policy" class="policy">
+    <div class="wrap">
+      <div class="eyebrow">Legal</div>
+      <h2>Refund, Privacy &amp; Terms</h2>
+
+      <h3 id="refund">Refund policy</h3>
+      <p>Because every customer gets a full 14-day free trial before paying, we generally do not offer refunds on subscription charges. If something isn’t working, email us within 7 days of a charge and we’ll help fix it or arrange a fair resolution. You can cancel anytime to stop future billing.</p>
+
+      <h3 id="privacy">Privacy</h3>
+      <p>The software runs locally on your machine. To verify your subscription, your license key is checked against our payment provider (Lemon Squeezy); no source code or project data is collected or transmitted by us. Purchases and billing data are handled by Lemon Squeezy as merchant of record.</p>
+
+      <h3 id="terms">Terms</h3>
+      <p>Roblox MCP Pro is proprietary software licensed, not sold, on a subscription basis for use with your own Roblox projects. A valid subscription is required after the trial. Not affiliated with or endorsed by Roblox Corporation. “Roblox” is a trademark of Roblox Corporation.</p>
+
+      <h3 id="contact">Contact</h3>
+      <p>Support &amp; sales: <a href="mailto:ett.thailand123@gmail.com">ett.thailand123@gmail.com</a></p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap row">
+    <div>© <span id="yr"></span> Roblox MCP Pro. All rights reserved.</div>
+    <div>
+      <a href="#refund">Refunds</a> ·
+      <a href="#privacy">Privacy</a> ·
+      <a href="#terms">Terms</a> ·
+      <a href="mailto:ett.thailand123@gmail.com">Contact</a>
+    </div>
+  </div>
+</footer>
+<script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+</body>
+</html>
