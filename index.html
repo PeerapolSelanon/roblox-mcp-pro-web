@@ -3,229 +3,442 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Roblox MCP Pro — Drive Roblox Studio with your AI agent</title>
-<meta name="description" content="Let Claude, Codex, Cursor and other AI agents control a live Roblox Studio session — run Luau, build UI & terrain, and sync Studio with your files. 14-day free trial." />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>" />
+<title>Roblox MCP Pro: AI that builds in Roblox Studio</title>
+<meta name="description" content="Connect Claude, Codex, Cursor and other AI agents to a live Roblox Studio session. They run Luau, edit the world, build UI and terrain, and sync with your files. 14-day free trial, then $5/month." />
+<meta property="og:title" content="Roblox MCP Pro: AI that builds in Roblox Studio" />
+<meta property="og:description" content="28 tools that give your AI agent real hands in Roblox Studio. Free 14-day trial." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23e8633a'/><path d='M30 30h40v40H30z' fill='%23150f0c'/></svg>" />
+<script>document.documentElement.classList.add('js');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --bg:#0b0d12; --panel:#141823; --panel2:#1b2130; --line:#262d3d;
-    --text:#e7ecf5; --muted:#9aa6bd; --brand:#5b8cff; --brand2:#7c5cff;
-    --good:#37d39b; --radius:16px; --max:1080px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{background:var(--bg);color:var(--text);font:16px/1.6 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-  a{color:inherit;text-decoration:none}
-  .wrap{max-width:var(--max);margin:0 auto;padding:0 22px}
-  .btn{display:inline-block;padding:13px 22px;border-radius:12px;font-weight:600;transition:.15s;border:1px solid transparent;cursor:pointer}
-  .btn-primary{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
-  .btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
-  .btn-ghost{border-color:var(--line);color:var(--text)}
-  .btn-ghost:hover{background:var(--panel2)}
-  .muted{color:var(--muted)}
-  .pill{display:inline-block;padding:5px 12px;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--muted);background:var(--panel)}
+    --bg: oklch(0.165 0.012 45);
+    --surface: oklch(0.205 0.014 45);
+    --surface-2: oklch(0.245 0.016 45);
+    --line: oklch(0.30 0.016 45);
+    --line-soft: oklch(0.26 0.015 45);
+    --ink: oklch(0.96 0.008 70);
+    --muted: oklch(0.745 0.014 55);
+    --faint: oklch(0.60 0.012 55);
+    --accent: oklch(0.70 0.19 45);
+    --accent-hi: oklch(0.78 0.17 58);
+    --on-accent: oklch(0.18 0.02 45);
+    --ok: oklch(0.80 0.14 155);
 
-  /* nav */
-  header{position:sticky;top:0;z-index:10;backdrop-filter:blur(10px);background:rgba(11,13,18,.72);border-bottom:1px solid var(--line)}
-  nav{display:flex;align-items:center;justify-content:space-between;height:64px}
-  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px}
-  .logo span{font-size:22px}
-  nav .links{display:flex;gap:26px;align-items:center}
-  nav .links a{color:var(--muted);font-size:15px}
-  nav .links a:hover{color:var(--text)}
-  @media(max-width:760px){nav .links a:not(.btn){display:none}}
+    --display: "Bricolage Grotesque", system-ui, sans-serif;
+    --body: "Hanken Grotesk", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+
+    --max: 1080px;
+    --r: 11px;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+    --z-sticky: 100;
+    --z-toast: 400;
+  }
+
+  *{ box-sizing: border-box; margin: 0; padding: 0; }
+  html{ scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  a{ color: inherit; text-decoration: none; }
+  ::selection{ background: var(--accent); color: var(--on-accent); }
+  :focus-visible{ outline: 2px solid var(--accent-hi); outline-offset: 3px; border-radius: 4px; }
+
+  .wrap{ width: 100%; max-width: var(--max); margin-inline: auto; padding-inline: clamp(20px, 5vw, 40px); }
+
+  h1, h2, h3{ font-family: var(--display); font-weight: 800; line-height: 1.06; letter-spacing: -0.025em; text-wrap: balance; }
+  p{ text-wrap: pretty; }
+  .mono{ font-family: var(--mono); }
+
+  /* buttons */
+  .btn{
+    display: inline-flex; align-items: center; gap: 9px;
+    font-family: var(--body); font-weight: 600; font-size: 15px;
+    padding: 13px 20px; border-radius: var(--r); border: 1px solid transparent;
+    cursor: pointer; transition: transform .18s var(--ease), background-color .18s var(--ease), border-color .18s var(--ease);
+    white-space: nowrap;
+  }
+  .btn-primary{ background: var(--accent); color: var(--on-accent); }
+  .btn-primary:hover{ background: var(--accent-hi); transform: translateY(-2px); }
+  .btn-ghost{ border-color: var(--line); color: var(--ink); background: transparent; }
+  .btn-ghost:hover{ border-color: var(--faint); background: var(--surface); transform: translateY(-2px); }
+  .btn svg{ width: 16px; height: 16px; }
+
+  .pill{
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--mono); font-size: 13px; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px;
+    background: color-mix(in oklch, var(--surface) 60%, transparent);
+  }
+  .dot{ width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none; }
+
+  /* header */
+  header{
+    position: sticky; top: 0; z-index: var(--z-sticky);
+    background: color-mix(in oklch, var(--bg) 78%, transparent);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid transparent;
+    transition: border-color .25s var(--ease);
+  }
+  header.scrolled{ border-bottom-color: var(--line-soft); }
+  nav{ display: flex; align-items: center; justify-content: space-between; height: 66px; }
+  .brand{ display: inline-flex; align-items: center; gap: 11px; font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: -0.02em; }
+  .brand .mark{ width: 26px; height: 26px; border-radius: 7px; background: var(--accent); display: grid; place-items: center; }
+  .brand .mark span{ width: 11px; height: 11px; background: var(--on-accent); border-radius: 2px; }
+  nav .links{ display: flex; align-items: center; gap: 30px; }
+  nav .links a:not(.btn){ color: var(--muted); font-size: 15px; transition: color .15s; }
+  nav .links a:not(.btn):hover{ color: var(--ink); }
+  @media (max-width: 800px){ nav .links a:not(.btn){ display: none; } }
 
   /* hero */
-  .hero{padding:90px 0 70px;text-align:center;position:relative;overflow:hidden}
-  .hero::before{content:"";position:absolute;inset:-40% 0 auto 0;height:520px;background:radial-gradient(60% 60% at 50% 0%,rgba(124,92,255,.20),transparent 70%);pointer-events:none}
-  .hero h1{font-size:clamp(34px,6vw,60px);line-height:1.08;letter-spacing:-.02em;font-weight:800;max-width:880px;margin:0 auto 18px}
-  .hero h1 .grad{background:linear-gradient(135deg,var(--brand),var(--brand2));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .hero p.lead{font-size:clamp(16px,2.4vw,20px);color:var(--muted);max-width:640px;margin:0 auto 30px}
-  .cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-  .hero .note{margin-top:16px;font-size:14px;color:var(--muted)}
+  .hero{ padding-top: clamp(56px, 9vw, 104px); padding-bottom: clamp(48px, 7vw, 84px); position: relative; }
+  .hero::before{
+    content: ""; position: absolute; top: -160px; left: 50%; transform: translateX(-50%);
+    width: min(900px, 110vw); height: 520px; pointer-events: none; z-index: -1;
+    background: radial-gradient(50% 50% at 50% 50%, color-mix(in oklch, var(--accent) 22%, transparent), transparent 72%);
+    filter: blur(8px);
+  }
+  .hero-grid{ display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(36px, 5vw, 64px); align-items: center; }
+  @media (max-width: 920px){ .hero-grid{ grid-template-columns: 1fr; gap: 44px; } }
+
+  .hero h1{ font-size: clamp(2.6rem, 6.2vw, 4.6rem); }
+  .hero h1 em{ font-style: normal; color: var(--accent); }
+  .hero .lead{ margin-top: 22px; font-size: clamp(1.05rem, 1.9vw, 1.28rem); color: var(--muted); max-width: 33ch; }
+  .hero .cta{ margin-top: 32px; display: flex; gap: 13px; flex-wrap: wrap; }
+  .hero .fineprint{ margin-top: 18px; font-size: 13.5px; color: var(--faint); font-family: var(--mono); }
+
+  /* command mock */
+  .mock{ background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: 0 30px 70px -40px oklch(0 0 0 / 0.8); }
+  .mock-bar{ display: flex; align-items: center; gap: 8px; padding: 12px 15px; border-bottom: 1px solid var(--line-soft); background: var(--surface-2); }
+  .mock-bar i{ width: 11px; height: 11px; border-radius: 50%; background: var(--line); display: inline-block; }
+  .mock-bar .t{ margin-left: 8px; font-family: var(--mono); font-size: 12px; color: var(--faint); }
+  .mock-body{ padding: 18px clamp(16px, 2vw, 22px); font-family: var(--mono); font-size: 13.5px; line-height: 1.85; }
+  .mock .you{ color: var(--ink); }
+  .mock .you b{ color: var(--accent); font-weight: 500; }
+  .mock .ag{ color: var(--faint); }
+  .mock .call{ color: var(--ink); }
+  .mock .call b{ color: var(--accent); font-weight: 500; }
+  .mock .res{ color: var(--ok); }
+  .mock .res::before{ content: "✓ "; }
+  .mock .cursor{ display: inline-block; width: 8px; height: 1.05em; background: var(--accent); vertical-align: -2px; animation: blink 1.1s steps(2) infinite; }
+  @keyframes blink{ 50%{ opacity: 0; } }
 
   /* sections */
-  section{padding:64px 0;border-top:1px solid var(--line)}
-  .eyebrow{color:var(--brand);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
-  h2{font-size:clamp(26px,4vw,38px);letter-spacing:-.01em;margin-bottom:14px;font-weight:800}
-  .sub{color:var(--muted);max-width:620px;margin-bottom:38px}
+  section{ padding-block: clamp(56px, 8vw, 110px); }
+  .sec-head{ max-width: 56ch; margin-bottom: clamp(34px, 5vw, 56px); }
+  .sec-head h2{ font-size: clamp(1.9rem, 3.8vw, 2.9rem); }
+  .sec-head p{ margin-top: 14px; color: var(--muted); font-size: clamp(1rem, 1.6vw, 1.13rem); max-width: 52ch; }
+  .divider{ border: 0; border-top: 1px solid var(--line-soft); }
 
-  .grid{display:grid;gap:18px}
-  .g3{grid-template-columns:repeat(3,1fr)}
-  .g2{grid-template-columns:repeat(2,1fr)}
-  @media(max-width:860px){.g3{grid-template-columns:1fr 1fr}}
-  @media(max-width:620px){.g3,.g2{grid-template-columns:1fr}}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
-  .card h3{font-size:18px;margin-bottom:8px}
-  .card p{color:var(--muted);font-size:15px}
-  .card .ico{font-size:26px;margin-bottom:12px;display:block}
+  /* capabilities bento */
+  .bento{ display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; }
+  .cell{
+    background: var(--surface); border: 1px solid var(--line-soft); border-radius: 15px;
+    padding: clamp(20px, 2.4vw, 28px); display: flex; flex-direction: column; gap: 9px;
+    transition: border-color .2s var(--ease), transform .2s var(--ease), background-color .2s var(--ease);
+  }
+  .cell:hover{ border-color: var(--line); transform: translateY(-3px); background: var(--surface-2); }
+  .cell .tools{ display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 4px; }
+  .cell .tag{ font-family: var(--mono); font-size: 12.5px; color: var(--accent); background: color-mix(in oklch, var(--accent) 13%, transparent); border-radius: 6px; padding: 3px 8px; }
+  .cell h3{ font-size: 1.18rem; letter-spacing: -0.015em; line-height: 1.2; }
+  .cell p{ color: var(--muted); font-size: 0.96rem; }
+  .cell.lg{ grid-column: span 3; }
+  .cell.md{ grid-column: span 2; }
+  .cell.sm{ grid-column: span 2; }
+  .cell.wide{ grid-column: span 4; }
+  @media (max-width: 860px){
+    .bento{ grid-template-columns: repeat(2, 1fr); }
+    .cell.lg, .cell.md, .cell.sm, .cell.wide{ grid-column: span 2; }
+  }
 
-  .agents{display:flex;flex-wrap:wrap;gap:10px}
-  .agents .pill{font-size:14px;color:var(--text);background:var(--panel2)}
+  /* agents */
+  .agents-row{ display: flex; flex-wrap: wrap; gap: 11px; margin-top: 6px; }
+  .agents-note{ margin-top: 26px; color: var(--muted); max-width: 60ch; }
+  .agents-note code{ font-family: var(--mono); font-size: 0.9em; color: var(--ink); background: var(--surface); border: 1px solid var(--line-soft); border-radius: 6px; padding: 2px 7px; }
 
-  .steps{counter-reset:s}
-  .step{display:flex;gap:18px;padding:18px 0;border-bottom:1px solid var(--line)}
-  .step:last-child{border-bottom:0}
-  .step .num{counter-increment:s;flex:0 0 38px;height:38px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font-weight:700;color:var(--brand)}
-  .step .num::before{content:counter(s)}
-  .step h3{font-size:17px;margin-bottom:3px}
-  .step p{color:var(--muted);font-size:15px}
+  /* steps */
+  .steps{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; counter-reset: s; }
+  @media (max-width: 760px){ .steps{ grid-template-columns: 1fr; } }
+  .step{ position: relative; padding-top: 54px; }
+  .step .n{ position: absolute; top: 0; left: 0; counter-increment: s; font-family: var(--mono); font-size: 14px; color: var(--accent); border: 1px solid var(--line); border-radius: 9px; width: 38px; height: 38px; display: grid; place-items: center; }
+  .step .n::before{ content: "0" counter(s); }
+  .step h3{ font-size: 1.22rem; letter-spacing: -0.015em; }
+  .step p{ margin-top: 8px; color: var(--muted); }
+  .step p code{ font-family: var(--mono); font-size: 0.86em; color: var(--ink); background: var(--surface); border: 1px solid var(--line-soft); border-radius: 6px; padding: 2px 6px; }
 
   /* pricing */
-  .price-wrap{display:flex;justify-content:center}
-  .price{max-width:420px;width:100%;background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:20px;padding:34px;text-align:center;position:relative}
-  .price .amt{font-size:46px;font-weight:800;margin:6px 0}
-  .price .amt small{font-size:17px;color:var(--muted);font-weight:500}
-  .price ul{list-style:none;text-align:left;margin:24px 0;display:grid;gap:11px}
-  .price li{display:flex;gap:10px;color:var(--text);font-size:15px}
-  .price li::before{content:"✓";color:var(--good);font-weight:800}
-  .price .btn{width:100%;margin-top:6px}
-  .price .trial{margin-top:14px;font-size:13px;color:var(--muted)}
+  .price-wrap{ display: grid; grid-template-columns: 0.9fr 1.1fr; gap: clamp(28px, 4vw, 56px); align-items: center; }
+  @media (max-width: 820px){ .price-wrap{ grid-template-columns: 1fr; } }
+  .price-pitch h2{ font-size: clamp(1.9rem, 3.6vw, 2.7rem); }
+  .price-pitch p{ margin-top: 14px; color: var(--muted); max-width: 42ch; }
+  .price-card{ background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: clamp(26px, 3vw, 38px); }
+  .price-card .amt{ font-family: var(--display); font-weight: 800; font-size: clamp(3rem, 6vw, 4rem); letter-spacing: -0.03em; line-height: 1; }
+  .price-card .amt span{ font-family: var(--body); font-weight: 500; font-size: 1.05rem; color: var(--muted); letter-spacing: 0; }
+  .price-card .billed{ margin-top: 10px; color: var(--faint); font-family: var(--mono); font-size: 13px; }
+  .price-card ul{ list-style: none; margin: 26px 0; display: grid; gap: 12px; }
+  .price-card li{ display: flex; gap: 11px; align-items: flex-start; font-size: 0.98rem; }
+  .price-card li svg{ width: 18px; height: 18px; flex: none; margin-top: 2px; color: var(--ok); }
+  .price-card .btn{ width: 100%; justify-content: center; }
+  .price-card .trial{ margin-top: 14px; text-align: center; font-size: 13px; color: var(--faint); }
 
-  /* faq + policy */
-  details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px}
-  details summary{cursor:pointer;font-weight:600;list-style:none}
-  details summary::after{content:"+";float:right;color:var(--muted)}
-  details[open] summary::after{content:"–"}
-  details p{color:var(--muted);margin-top:10px;font-size:15px}
+  /* faq */
+  .faq{ display: grid; gap: 11px; max-width: 760px; }
+  details{ background: var(--surface); border: 1px solid var(--line-soft); border-radius: 13px; transition: border-color .2s; }
+  details[open]{ border-color: var(--line); }
+  summary{ cursor: pointer; list-style: none; padding: 18px 20px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  summary::-webkit-details-marker{ display: none; }
+  summary .chev{ flex: none; color: var(--faint); transition: transform .2s var(--ease); }
+  details[open] summary .chev{ transform: rotate(45deg); color: var(--accent); }
+  details p{ padding: 0 20px 19px; color: var(--muted); }
 
-  .policy h3{margin:22px 0 6px;font-size:18px}
-  .policy p{color:var(--muted);margin-bottom:6px}
+  /* legal */
+  .legal{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: clamp(24px, 4vw, 44px); }
+  .legal h3{ font-family: var(--display); font-weight: 700; font-size: 1.05rem; margin-bottom: 9px; }
+  .legal p{ color: var(--muted); font-size: 0.94rem; }
+  .legal a{ color: var(--accent); }
+  .legal a:hover{ color: var(--accent-hi); }
 
-  footer{border-top:1px solid var(--line);padding:34px 0;color:var(--muted);font-size:14px}
-  footer .row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px}
-  footer a{color:var(--muted)}footer a:hover{color:var(--text)}
+  /* footer */
+  footer{ border-top: 1px solid var(--line-soft); padding-block: 34px; color: var(--faint); font-size: 14px; }
+  footer .row{ display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; align-items: center; }
+  footer .row a{ color: var(--muted); }
+  footer .row a:hover{ color: var(--ink); }
+  footer .fnav{ display: flex; gap: 20px; flex-wrap: wrap; }
+
+  /* reveal motion (enhances an already-visible default; only active with JS) */
+  .js .reveal{ opacity: 0; transform: translateY(18px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+  .js .reveal.in{ opacity: 1; transform: none; }
+  .hero h1, .hero .lead, .hero .cta, .hero .fineprint, .hero .mock{ }
+  .js .rise{ opacity: 0; transform: translateY(20px); animation: rise .9s var(--ease) forwards; }
+  .js .rise.d1{ animation-delay: .06s; } .js .rise.d2{ animation-delay: .14s; }
+  .js .rise.d3{ animation-delay: .22s; } .js .rise.d4{ animation-delay: .30s; }
+  @keyframes rise{ to{ opacity: 1; transform: none; } }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior: auto; }
+    *, *::before, *::after{ animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    .js .reveal{ opacity: 1; transform: none; }
+    .js .rise{ opacity: 1; transform: none; }
+    .mock .cursor{ animation: none; }
+  }
 </style>
 </head>
 <body>
 
-<header>
+<header id="top">
   <div class="wrap">
     <nav>
-      <div class="logo"><span>🎮</span> Roblox MCP Pro</div>
+      <a class="brand" href="#top"><span class="mark"><span></span></span> Roblox MCP Pro</a>
       <div class="links">
-        <a href="#features">Features</a>
+        <a href="#capabilities">Capabilities</a>
         <a href="#how">How it works</a>
         <a href="#pricing">Pricing</a>
         <a href="#faq">FAQ</a>
-        <a class="btn btn-primary" href="#pricing">Get started</a>
+        <a class="btn btn-primary" href="#pricing">Start free trial</a>
       </div>
     </nav>
   </div>
 </header>
 
 <main>
-  <section class="hero" style="border-top:0">
-    <div class="wrap">
-      <span class="pill">⚡ Works with Claude, Codex, Cursor, Antigravity & more</span>
-      <h1>Let your AI agent <span class="grad">build inside Roblox Studio</span></h1>
-      <p class="lead">Roblox MCP Pro connects your AI assistant to a live Roblox Studio session — it runs Luau, edits the world, builds UI &amp; terrain, and keeps Studio in sync with your files.</p>
-      <div class="cta">
-        <a class="btn btn-primary" href="#pricing">Start 14-day free trial</a>
-        <a class="btn btn-ghost" href="#how">See how it works</a>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="pill rise d1"><span class="dot"></span> Works with Claude, Codex, Cursor &amp; more</span>
+        <h1 class="rise d1" style="margin-top:20px">AI that <em>builds</em> in Roblox Studio, not just talks about it.</h1>
+        <p class="lead rise d2">Connect your agent to a live Studio session. It runs Luau, edits the world, builds UI and terrain, and keeps Studio in sync with your files.</p>
+        <div class="cta rise d3">
+          <a class="btn btn-primary" href="https://roblox-mcp-pro.lemonsqueezy.com/checkout/buy/91ab6fc2-cbd5-42b8-8125-483bed295faa">
+            Start 14-day trial
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+        </div>
+        <p class="fineprint rise d3">No card for the trial · $5/month after · cancel anytime</p>
       </div>
-      <p class="note">No credit card for the trial · Cancel anytime</p>
+
+      <div class="mock rise d4" aria-hidden="true">
+        <div class="mock-bar"><i></i><i></i><i></i><span class="t">agent → roblox-mcp-pro</span></div>
+        <div class="mock-body">
+          <div class="you">› <b>build a neon shop UI on a dark backdrop</b></div>
+          <div class="ag">agent</div>
+          <div class="call">&nbsp;&nbsp;<b>manage_ui</b> create ScreenGui "Shop"</div>
+          <div class="res">14 instances created</div>
+          <div class="call">&nbsp;&nbsp;<b>execute_luau</b> TweenService slide-in</div>
+          <div class="res">ran in 6ms, Studio updated</div>
+          <div class="call">&nbsp;&nbsp;<b>capture_studio</b> verify render</div>
+          <div class="res">looks good</div>
+          <div class="you" style="margin-top:6px">› <span class="cursor"></span></div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section id="features">
+  <!-- CAPABILITIES -->
+  <section id="capabilities">
     <div class="wrap">
-      <div class="eyebrow">What it does</div>
-      <h2>One agent, full control of Studio</h2>
-      <p class="sub">28 purpose-built tools give your AI real hands inside Roblox Studio — not just code suggestions.</p>
-      <div class="grid g3">
-        <div class="card"><span class="ico">⚙️</span><h3>Run Luau live</h3><p>Execute code in Studio and read back output, return values, and errors.</p></div>
-        <div class="card"><span class="ico">🌳</span><h3>Query &amp; edit the world</h3><p>Search, create, move, clone and delete instances; read and write any property.</p></div>
-        <div class="card"><span class="ico">🎨</span><h3>Build UI from an image</h3><p>Turn a screenshot or mockup into a real ScreenGui, then preview and refine it.</p></div>
-        <div class="card"><span class="ico">⛰️</span><h3>Terrain, lighting &amp; FX</h3><p>Generate voxel terrain, set time-of-day, fog, bloom, atmosphere and more.</p></div>
-        <div class="card"><span class="ico">🔁</span><h3>Two-way file sync</h3><p>Mirror a Studio subtree to disk and back, with a live source map.</p></div>
-        <div class="card"><span class="ico">👥</span><h3>Multi-agent ready</h3><p>Claude Code, Codex and Antigravity can drive the same Studio session at once.</p></div>
+      <div class="sec-head reveal">
+        <h2>28 tools. Real hands in Studio.</h2>
+        <p>Not code suggestions in a chat window. Actual operations against your live DataModel, run and verified inside the editor.</p>
+      </div>
+      <div class="bento">
+        <div class="cell lg reveal">
+          <div class="tools"><span class="tag">execute_luau</span></div>
+          <h3>Run Luau in a live session</h3>
+          <p>Execute code in Studio and read back output, return values, and errors. The agent writes, runs, and checks its own work.</p>
+        </div>
+        <div class="cell sm reveal">
+          <div class="tools"><span class="tag">query_instances</span><span class="tag">mutate_instances</span></div>
+          <h3>Edit the whole tree</h3>
+          <p>Search, create, move, clone, and delete anything in the DataModel.</p>
+        </div>
+        <div class="cell sm reveal">
+          <div class="tools"><span class="tag">manage_ui</span><span class="tag">ui_preview</span></div>
+          <h3>UI from a description or an image</h3>
+          <p>Build a GUI, preview it on a clean backdrop, compare, refine.</p>
+        </div>
+        <div class="cell md reveal">
+          <div class="tools"><span class="tag">manage_terrain</span><span class="tag">manage_lighting</span></div>
+          <h3>Worlds &amp; atmosphere</h3>
+          <p>Generate voxel terrain, set time of day, fog, bloom, and atmosphere.</p>
+        </div>
+        <div class="cell wide reveal">
+          <div class="tools"><span class="tag">manage_sync</span><span class="tag">batch_execute</span></div>
+          <h3>Two-way file sync, and big edits in one undo</h3>
+          <p>Mirror a Studio subtree to disk and back with a source map. Run many operations in a single round-trip that collapses to one undo.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <section>
+  <hr class="divider" />
+
+  <!-- AGENTS -->
+  <section id="agents">
     <div class="wrap">
-      <div class="eyebrow">Compatible</div>
-      <h2>Bring your own AI agent</h2>
-      <p class="sub">Register the server once and use it from any MCP-compatible client.</p>
-      <div class="agents">
+      <div class="sec-head reveal">
+        <h2>Bring your own agent.</h2>
+        <p>One MCP server, every compatible client. Register it once and your agent does the rest.</p>
+      </div>
+      <div class="agents-row reveal">
         <span class="pill">Claude Code</span>
         <span class="pill">Claude Desktop</span>
         <span class="pill">Codex</span>
         <span class="pill">Cursor</span>
         <span class="pill">Windsurf</span>
         <span class="pill">Antigravity / Gemini</span>
-        <span class="pill">Cline (VS Code)</span>
+        <span class="pill">Cline</span>
       </div>
+      <p class="agents-note reveal">Install with <code>npx -y roblox-mcp-pro@latest</code>. It auto-updates to the newest version and installs the Studio plugin for you, so there is nothing to maintain by hand.</p>
     </div>
   </section>
 
+  <hr class="divider" />
+
+  <!-- HOW IT WORKS -->
   <section id="how">
     <div class="wrap">
-      <div class="eyebrow">How it works</div>
-      <h2>Up and running in minutes</h2>
-      <div class="steps card" style="padding:8px 24px">
-        <div class="step"><div class="num"></div><div><h3>Register the MCP server</h3><p>One command (or one config line) in your AI client — installs via <code>npx</code>, nothing to build.</p></div></div>
-        <div class="step"><div class="num"></div><div><h3>Install the Studio plugin</h3><p>Drop the plugin into Roblox Studio and click Connect.</p></div></div>
-        <div class="step"><div class="num"></div><div><h3>Ask your agent to build</h3><p>“Build a shop UI”, “generate terrain”, “refactor this script” — it just works.</p></div></div>
+      <div class="sec-head reveal">
+        <h2>Running in three steps.</h2>
+        <p>From zero to your agent building in Studio in a couple of minutes.</p>
       </div>
-    </div>
-  </section>
-
-  <section id="pricing">
-    <div class="wrap">
-      <div class="eyebrow">Pricing</div>
-      <h2>Simple subscription</h2>
-      <p class="sub">Start with a 14-day free trial. Subscribe when you’re ready — cancel anytime.</p>
-      <div class="price-wrap">
-        <div class="price">
-          <div class="pill">Pro</div>
-          <div class="amt">$5 <small>/ month</small></div>
-          <p class="muted">Billed monthly · VAT/tax handled at checkout</p>
-          <ul>
-            <li>All 28 Studio tools</li>
-            <li>Use from any MCP client</li>
-            <li>Two-way Studio ↔ file sync</li>
-            <li>Multi-agent concurrent access</li>
-            <li>Product updates included</li>
-            <li>Email support</li>
-          </ul>
-          <a class="btn btn-primary" href="https://roblox-mcp-pro.lemonsqueezy.com/checkout/buy/91ab6fc2-cbd5-42b8-8125-483bed295faa">Subscribe — $5/mo</a>
-          <p class="trial">Or try free for 14 days first — no card required.</p>
+      <div class="steps">
+        <div class="step reveal"><span class="n"></span>
+          <h3>Register the server</h3>
+          <p>Add one line to your AI client, for example <code>claude mcp add roblox-mcp-pro -- npx -y roblox-mcp-pro@latest</code>.</p>
+        </div>
+        <div class="step reveal"><span class="n"></span>
+          <h3>Open Studio, click MCP</h3>
+          <p>The plugin installs itself on first run. Click the MCP button in the toolbar to connect the session.</p>
+        </div>
+        <div class="step reveal"><span class="n"></span>
+          <h3>Tell your agent what to build</h3>
+          <p>"Make a shop UI", "generate a snowy mountain", "refactor this script". It runs the tools and shows the result.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="faq">
-    <div class="wrap">
-      <div class="eyebrow">FAQ</div>
-      <h2>Questions</h2>
-      <details><summary>Do I need to know how to code?</summary><p>No. You drive it through your AI agent in plain language. Basic familiarity with Roblox Studio helps.</p></details>
-      <details><summary>How does the free trial work?</summary><p>Install and use everything free for 14 days — no credit card. After that, subscribe and paste your license key to keep going.</p></details>
-      <details><summary>Which AI assistants are supported?</summary><p>Any MCP-compatible client: Claude Code, Claude Desktop, Codex, Cursor, Windsurf, Antigravity/Gemini and Cline.</p></details>
-      <details><summary>Can I use it on more than one computer?</summary><p>Yes — your license activates on multiple machines (e.g. desktop + laptop).</p></details>
-      <details><summary>What happens if I cancel?</summary><p>You keep access until the end of your billing period; after that the license stops validating.</p></details>
+  <hr class="divider" />
+
+  <!-- PRICING -->
+  <section id="pricing">
+    <div class="wrap price-wrap">
+      <div class="price-pitch reveal">
+        <h2>One plan. Five dollars.</h2>
+        <p>Start with a 14-day free trial, no card required. Subscribe when it has earned a place in your workflow. Cancel any time.</p>
+      </div>
+      <div class="price-card reveal">
+        <div class="amt">$5 <span>/ month</span></div>
+        <div class="billed">Billed monthly · VAT/tax handled at checkout</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> All 28 Studio tools</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Use from any MCP client</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Two-way Studio ↔ file sync</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Multiple agents, one Studio session</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Automatic updates included</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Email support</li>
+        </ul>
+        <a class="btn btn-primary" href="https://roblox-mcp-pro.lemonsqueezy.com/checkout/buy/91ab6fc2-cbd5-42b8-8125-483bed295faa">Start free trial</a>
+        <div class="trial">14 days free, no card. Then $5/month.</div>
+      </div>
     </div>
   </section>
 
-  <section id="policy" class="policy">
+  <hr class="divider" />
+
+  <!-- FAQ -->
+  <section id="faq">
     <div class="wrap">
-      <div class="eyebrow">Legal</div>
-      <h2>Refund, Privacy &amp; Terms</h2>
+      <div class="sec-head reveal">
+        <h2>Questions, answered plainly.</h2>
+      </div>
+      <div class="faq">
+        <details class="reveal"><summary>Do I need to know how to code? <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></summary><p>No. You drive it through your AI agent in plain language. Basic familiarity with Roblox Studio helps you check the results.</p></details>
+        <details class="reveal"><summary>How does the free trial work? <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></summary><p>Install and use everything free for 14 days, no credit card. After that, subscribe and paste your license key to keep going.</p></details>
+        <details class="reveal"><summary>Which AI assistants are supported? <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></summary><p>Any MCP-compatible client: Claude Code, Claude Desktop, Codex, Cursor, Windsurf, Antigravity / Gemini, and Cline.</p></details>
+        <details class="reveal"><summary>Can I use one license on several computers? <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></summary><p>A license activates on one device at a time. Moving to a new machine is supported; reach out if you need to free up an activation.</p></details>
+        <details class="reveal"><summary>What happens if I cancel? <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></summary><p>You keep access until the end of your billing period. After that the license stops validating and the tools lock.</p></details>
+      </div>
+    </div>
+  </section>
 
-      <h3 id="refund">Refund policy</h3>
-      <p>Because every customer gets a full 14-day free trial before paying, we generally do not offer refunds on subscription charges. If something isn’t working, email us within 7 days of a charge and we’ll help fix it or arrange a fair resolution. You can cancel anytime to stop future billing.</p>
+  <hr class="divider" />
 
-      <h3 id="privacy">Privacy</h3>
-      <p>The software runs locally on your machine. To verify your subscription, your license key is checked against our payment provider (Lemon Squeezy); no source code or project data is collected or transmitted by us. Purchases and billing data are handled by Lemon Squeezy as merchant of record.</p>
-
-      <h3 id="terms">Terms</h3>
-      <p>Roblox MCP Pro is proprietary software licensed, not sold, on a subscription basis for use with your own Roblox projects. A valid subscription is required after the trial. Not affiliated with or endorsed by Roblox Corporation. “Roblox” is a trademark of Roblox Corporation.</p>
-
-      <h3 id="contact">Contact</h3>
-      <p>Support &amp; sales: <a href="mailto:peerapolselanon@gmail.com">peerapolselanon@gmail.com</a></p>
+  <!-- LEGAL -->
+  <section id="legal">
+    <div class="wrap">
+      <div class="sec-head reveal"><h2>Refund, privacy &amp; terms</h2></div>
+      <div class="legal reveal">
+        <div>
+          <h3 id="refund">Refund policy</h3>
+          <p>Every customer gets a full 14-day free trial before paying, so we generally do not refund subscription charges. If something is not working, email us within 7 days of a charge and we will help or arrange a fair resolution. Cancel any time to stop future billing.</p>
+        </div>
+        <div>
+          <h3 id="privacy">Privacy</h3>
+          <p>The software runs locally on your machine. To verify your subscription, your license key is checked against our payment provider (Lemon Squeezy). No source code or project data is collected or transmitted by us.</p>
+        </div>
+        <div>
+          <h3 id="terms">Terms</h3>
+          <p>Roblox MCP Pro is proprietary software, licensed on a subscription basis for use with your own Roblox projects. A valid subscription is required after the trial. Not affiliated with or endorsed by Roblox Corporation.</p>
+        </div>
+        <div>
+          <h3 id="contact">Contact</h3>
+          <p>Support and sales: <a href="mailto:peerapolselanon@gmail.com">peerapolselanon@gmail.com</a></p>
+        </div>
+      </div>
     </div>
   </section>
 </main>
@@ -233,14 +446,34 @@
 <footer>
   <div class="wrap row">
     <div>© <span id="yr"></span> Roblox MCP Pro. All rights reserved.</div>
-    <div>
-      <a href="#refund">Refunds</a> ·
-      <a href="#privacy">Privacy</a> ·
-      <a href="#terms">Terms</a> ·
+    <div class="fnav">
+      <a href="#refund">Refunds</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#terms">Terms</a>
       <a href="mailto:peerapolselanon@gmail.com">Contact</a>
     </div>
   </div>
 </footer>
-<script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // header hairline on scroll
+  const header = document.querySelector('header');
+  const onScroll = () => header.classList.toggle('scrolled', window.scrollY > 8);
+  onScroll(); addEventListener('scroll', onScroll, { passive: true });
+
+  // scroll reveals: enhance an already-visible default; never gate visibility
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const items = document.querySelectorAll('.reveal');
+  if (reduce || !('IntersectionObserver' in window)) {
+    items.forEach(el => el.classList.add('in'));
+  } else {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+    items.forEach(el => io.observe(el));
+  }
+</script>
 </body>
 </html>
